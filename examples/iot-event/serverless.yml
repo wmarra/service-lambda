@@ -11,4 +11,4 @@ functions:
     handler: handler.log
     events:
       - iot:
-          sql: "SELECT * FROM 'mybutton'"
+          sql: "SELECT * FROM 'hotmart_button'"

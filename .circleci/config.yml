@@ -18,9 +18,6 @@ jobs:
 
   deploy-staging:
     executor: default
-    environment:
-      RDS_DB_ID: testlambdareboot
-      AWS_REGION: us-west-2
     steps:
       - checkout
       - run: sudo apt-get install python-dev
@@ -30,13 +27,12 @@ jobs:
       - run: npm install
       - run:
           name: Deploy Lambda Function (Staging)
-          command: serverless deploy --stage staging
+          command: |
+            cd /home/circleci/
+            serverless deploy --stage staging
 
   deploy-master:
     executor: default
-    environment:
-      RDS_DB_ID: moltres
-      AWS_REGION: us-east-1
     steps:
       - checkout
       - run: sudo apt-get install python-dev
@@ -60,7 +56,7 @@ workflows:
                 - master
           post-steps:
             - slack/notify:
-                message: "[TEST] Deploy made by: ${CIRCLE_USERNAME}, commit: ${CIRCLE_SHA1:0:7} - Apply Lambda"
+                message: "Deploy made by: ${CIRCLE_USERNAME}, commit: ${CIRCLE_SHA1:0:7} - Apply Lambda"
                 webhook: ${SLACK_WEBHOOK_DEPLOYING}
 
       - deploy-master:

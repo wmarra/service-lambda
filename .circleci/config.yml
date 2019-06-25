@@ -1,0 +1,75 @@
+version: 2.1
+
+npm-permissions: &npm-permissions
+  - run: |
+      mkdir /home/circleci/npm
+      npm config set prefix /home/circleci/npm
+      echo 'export PATH=/home/circleci/npm/bin:$PATH' >> $BASH_ENV
+orbs:
+  aws-cli: circleci/aws-cli@0.1.13
+  slack: circleci/slack@0.1.14
+
+executors:
+  default:
+    docker:
+      - image: circleci/node:8.10
+
+jobs:
+
+  deploy-staging:
+    executor: default
+    environment:
+      RDS_DB_ID: testlambdareboot
+      AWS_REGION: us-west-2
+    steps:
+      - checkout
+      - run: sudo apt-get install python-dev
+      - <<: *npm-permissions
+      - aws-cli/install
+      - run: npm install serverless -g
+      - run: npm install
+      - run:
+          name: Deploy Lambda Function (Staging)
+          command: serverless deploy --stage staging
+
+  deploy-master:
+    executor: default
+    environment:
+      RDS_DB_ID: moltres
+      AWS_REGION: us-east-1
+    steps:
+      - checkout
+      - run: sudo apt-get install python-dev
+      - <<: *npm-permissions
+      - aws-cli/install
+      - run: npm install serverless -g
+      - run: npm install
+      - run:
+          name: Deploy Lambda Function
+          command: serverless deploy --stage production
+
+workflows:
+  version: 2.1
+  deploy:
+    jobs:
+      - deploy-staging:
+          context: microservices
+          filters:
+            branches:
+              ignore:
+                - master
+          post-steps:
+            - slack/notify:
+                message: "[TEST] Deploy made by: ${CIRCLE_USERNAME}, commit: ${CIRCLE_SHA1:0:7} - Apply Lambda"
+                webhook: ${SLACK_WEBHOOK_DEPLOYING}
+
+      - deploy-master:
+          context: microservices
+          filters:
+            branches:
+              only:
+                - master
+          post-steps:
+            - slack/notify:
+                message: "Deploy made by: ${CIRCLE_USERNAME}, commit: ${CIRCLE_SHA1:0:7} - Apply Lambda"
+                webhook: ${SLACK_WEBHOOK_DEPLOYING}

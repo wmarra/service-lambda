@@ -10,7 +10,6 @@ module.exports.delete = (event, context, callback) => {
       id: event.pathParameters.id,
     },
   };
-
   dynamoDb.delete(params, (error) => {
 
     if (error) {

@@ -42,7 +42,9 @@ jobs:
       - run: npm install
       - run:
           name: Deploy Lambda Function
-          command: serverless deploy --stage production
+          command: |
+            cd /home/circleci/ 
+            serverless deploy --stage production
 
 workflows:
   version: 2.1

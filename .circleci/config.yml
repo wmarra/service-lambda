@@ -28,7 +28,7 @@ jobs:
       - run:
           name: Deploy Lambda Function (Staging)
           command: |
-            cd /home/circleci/
+            cd /home/circleci/project/examples/api-dynamodb
             serverless deploy --stage staging
 
   deploy-master:
@@ -43,7 +43,7 @@ jobs:
       - run:
           name: Deploy Lambda Function
           command: |
-            cd /home/circleci/ 
+            cd /home/circleci/project/examples/api-dynamodb
             serverless deploy --stage production
 
 workflows:
